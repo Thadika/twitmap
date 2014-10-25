@@ -1,0 +1,54 @@
+body {
+  padding-top: 50px;
+}
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
+.navbar-fixed-top {
+	background-color: #55acee;
+		border-color: #55acee;
+}
+
+.navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:hover, .navbar-inverse .navbar-nav>.active>a:focus{
+	background-color: #3f83b6;
+}
+
+#main-content {
+	margin-left: auto; 
+	margin-right: auto; 
+	width:600px;
+	padding: 5px;
+}
+
+#go {
+    width: 34px;
+    height: 34px;
+    background-color: #55acee;
+    background-image: url('../assets/twiticon3.png');
+    background-size: 34px 34px;
+    background-repeat: no-repeat;
+}
+
+.starter-template {
+	padding: 0px 15px;
+
+}
+
+body, html {
+  height: 100%;
+  width: 100%;
+}
+
+.fill {
+  height: 100%;
+  width: 100%;
+}
+
+#googleMap {
+  width:600px; 
+  height:450px;   
+  margin-top: 5px;
+  margin-bottom: 10px; 
+}

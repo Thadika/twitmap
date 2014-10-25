@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+  <servlet>
+		<servlet-name>Twitmap</servlet-name>
+		<servlet-class>ServletTwitmap</servlet-class>
+	</servlet>
+ 
+	<servlet-mapping>
+		<servlet-name>Twitmap</servlet-name>
+		<url-pattern>/Twitmap</url-pattern>
+	</servlet-mapping>
+</web-app>
