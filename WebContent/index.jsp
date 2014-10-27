@@ -1,3 +1,5 @@
+<%@ page language="java" contentType="text/html; charset=US-ASCII"
+    pageEncoding="US-ASCII"%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,15 +43,23 @@
 			var lat;
 			var lng;
 			$.getJSON("Twitmap", {keyword:$('#keyword').val()}, function(data) {
-				var marker = data.marker.split(",");
-				lat = marker[0];
-				lng = marker[1];
-				var location = new google.maps.LatLng(lat, lng);
-				var marker = new google.maps.Marker({
-					position : location,
-					map : map
-				});
-				marker.setMap(map);
+				if(data.success && data.markers.length > 0){
+					var bounds = new google.maps.LatLngBounds ();
+					for(var i = 0; i < data.markers.length; i++){
+						var marker = data.markers[i].split(",");
+		 				lat = marker[0];
+		 				lng = marker[1];
+		 				var location = new google.maps.LatLng(lat, lng);
+		 				var marker = new google.maps.Marker({
+		 					position : location,
+		 					map : map
+		 				});
+		 				bounds.extend(location);
+		 				marker.setMap(map);
+					}
+					map.fitBounds(bounds);
+				}
+
 			});
 			return false; // prevents the page from refreshing before JSON is read from server response
 	}
