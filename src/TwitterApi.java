@@ -13,10 +13,10 @@ import twitter4j.conf.ConfigurationBuilder;
 
 
 public class TwitterApi {
-	private static final String CONSUMER = "5DVp2sh4PCJnib1X84P1DFSPM";
-	private static final String CONSUMER_SECRET = "t7VwvP48WKVKyTfxdX3AG2OKG6l0EqmGnoF6shEmYtM1gRPjXA";
-	private static final String ACCESS_TOKEN = "600561617-e9MMZLJUkra2SPNnjb7YtIMSyTx5GiKUdfE06EWM";
-	private static final String ACCESS_TOKEN_SECRET = "N7PbwMUeYzUjhYNnIdqzKBTzygY1DUbkSiUa3U8L1kfeS";
+	private static final String CONSUMER = "****";
+	private static final String CONSUMER_SECRET = "***";
+	private static final String ACCESS_TOKEN = "****";
+	private static final String ACCESS_TOKEN_SECRET = "****";
 	
 	private Twitter twitter;
 	
