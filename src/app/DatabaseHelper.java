@@ -92,7 +92,7 @@ public class DatabaseHelper
 		}
 	}
 	
-	public void saveTweet(String tweet)
+	public void saveTweet(Tweet tweet)
 	{
 		System.out.println("Saving tweet ...");
 		try
