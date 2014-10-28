@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -9,6 +11,9 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.DescribeTableRequest;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
@@ -96,28 +101,34 @@ public class DatabaseHelper
 		}
 	}
 	
-	public String getTweetByTopic(String topic)
+	public List<String> getTweetsByTopic(String topic)
 	{
-		String tweet = null;
-		System.out.println("Checking for tweet with topic: '" + topic + "' ...");
+		System.out.println("Getting all tweets by topic ...");
+		List<String> scannedTweets = new ArrayList<String>();
+		List<String> tweets = new ArrayList<String>();
 		try
-		{			
+		{
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
-			tweet = mapper.load(String.class, topic);
-			if (tweet == null)
-			{
-				System.out.println("Not found.");
-			}
-			else
-			{
-				System.out.println("Found.");
-			}
+			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+
+			Map<String, Condition> scanFilter = new HashMap<String, Condition>();
+			Condition scanCondition = new Condition()
+			.withComparisonOperator(ComparisonOperator.EQ.toString())
+			.withAttributeValueList(new AttributeValue().withS(topic));
+
+			scanFilter.put("Topic", scanCondition);
+
+			scanExpression.setScanFilter(scanFilter);
+
+			scannedTweets = mapper.scan(String.class, scanExpression);
+			System.out.println("Retrieved " + scannedTweets.size() + " record(s).");
+			tweets.addAll(scannedTweets);
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
-		return tweet;
+		return tweets;
 	}
 	
 	public List<String> getAllTweets()
