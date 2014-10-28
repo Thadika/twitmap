@@ -22,6 +22,7 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import com.amazonaws.services.dynamodbv2.model.TableStatus;
 
+import models.Tweet;
 
 public class DatabaseHelper
 {
@@ -40,6 +41,10 @@ public class DatabaseHelper
 		try {
 			ArrayList<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
 			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Id").withAttributeType("S"));
+			
+			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Location").withAttributeType("S"));
+			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Keyword").withAttributeType("S"));
+
 			
 			ArrayList<KeySchemaElement> ks = new ArrayList<KeySchemaElement>();
 			ks.add(new KeySchemaElement().withAttributeName("Id").withKeyType(KeyType.HASH));
@@ -101,11 +106,13 @@ public class DatabaseHelper
 		}
 	}
 	
-	public List<String> getTweetsByTopic(String topic)
+
+	public List<Tweet> getTweetsByTopic(String topic)
 	{
 		System.out.println("Getting all tweets by topic ...");
-		List<String> scannedTweets = new ArrayList<String>();
-		List<String> tweets = new ArrayList<String>();
+		List<Tweet> scannedTweets = new ArrayList<Tweet>();
+		List<Tweet> tweets = new ArrayList<Tweet>();
+
 		try
 		{
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
@@ -120,7 +127,7 @@ public class DatabaseHelper
 
 			scanExpression.setScanFilter(scanFilter);
 
-			scannedTweets = mapper.scan(String.class, scanExpression);
+			scannedTweets = mapper.scan(Tweet.class, scanExpression);
 			System.out.println("Retrieved " + scannedTweets.size() + " record(s).");
 			tweets.addAll(scannedTweets);
 		}
@@ -131,17 +138,18 @@ public class DatabaseHelper
 		return tweets;
 	}
 	
-	public List<String> getAllTweets()
+	public List<Tweet> getAllTweets()
 	{
 		System.out.println("Getting all tweets ...");
-		List<String> scannedTweets = new ArrayList<String>();
-		List<String> tweets = new ArrayList<String>();
+		List<Tweet> scannedTweets = new ArrayList<Tweet>();
+		List<Tweet> tweets = new ArrayList<Tweet>();
+
 		try
 		{			
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
 			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
 			
-			scannedTweets = mapper.scan(String.class, scanExpression);
+			scannedTweets = mapper.scan(Tweet.class, scanExpression);
 			System.out.println("Retrieved " + scannedTweets.size() + " record(s).");
 			
 			tweets.addAll(scannedTweets);
