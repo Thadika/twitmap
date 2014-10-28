@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -9,6 +11,9 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.DescribeTableRequest;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
@@ -17,6 +22,7 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import com.amazonaws.services.dynamodbv2.model.TableStatus;
 
+import models.Tweet;
 
 public class DatabaseHelper
 {
@@ -35,6 +41,8 @@ public class DatabaseHelper
 		try {
 			ArrayList<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
 			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Id").withAttributeType("S"));
+			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Location").withAttributeType("S"));
+			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Keyword").withAttributeType("S"));
 			
 			ArrayList<KeySchemaElement> ks = new ArrayList<KeySchemaElement>();
 			ks.add(new KeySchemaElement().withAttributeName("Id").withKeyType(KeyType.HASH));
@@ -96,35 +104,41 @@ public class DatabaseHelper
 		}
 	}
 	
-	public String getTweetByTopic(String topic)
+	public List<Tweet> getTweetsByTopic(String topic)
 	{
-		String tweet = null;
-		System.out.println("Checking for tweet with topic: '" + topic + "' ...");
+		System.out.println("Getting all tweets by topic ...");
+		List<Tweet> scannedTweets = new ArrayList<Tweet>();
+		List<Tweet> tweets = new ArrayList<Tweet>();
 		try
-		{			
+		{
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
-			tweet = mapper.load(String.class, topic);
-			if (tweet == null)
-			{
-				System.out.println("Not found.");
-			}
-			else
-			{
-				System.out.println("Found.");
-			}
+			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+
+			Map<String, Condition> scanFilter = new HashMap<String, Condition>();
+			Condition scanCondition = new Condition()
+			.withComparisonOperator(ComparisonOperator.EQ.toString())
+			.withAttributeValueList(new AttributeValue().withS(topic));
+
+			scanFilter.put("Topic", scanCondition);
+
+			scanExpression.setScanFilter(scanFilter);
+
+			scannedTweets = mapper.scan(Tweet.class, scanExpression);
+			System.out.println("Retrieved " + scannedTweets.size() + " record(s).");
+			tweets.addAll(scannedTweets);
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
-		return tweet;
+		return tweets;
 	}
 	
-	public List<String> getAllTweets()
+	public List<Tweet> getAllTweets()
 	{
 		System.out.println("Getting all tweets ...");
-		List<String> scannedTweets = new ArrayList<String>();
-		List<String> tweets = new ArrayList<String>();
+		List<Tweet> scannedTweets = new ArrayList<Tweet>();
+		List<Tweet> tweets = new ArrayList<Tweet>();
 		try
 		{			
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
