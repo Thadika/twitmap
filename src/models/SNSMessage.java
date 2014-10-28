@@ -1,3 +1,5 @@
+package models;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SNSMessage {
