@@ -1,3 +1,6 @@
+package app;
+import models.SNSMessage;
+
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
