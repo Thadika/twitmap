@@ -41,8 +41,10 @@ public class DatabaseHelper
 		try {
 			ArrayList<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
 			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Id").withAttributeType("S"));
+			
 			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Location").withAttributeType("S"));
 			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Keyword").withAttributeType("S"));
+
 			
 			ArrayList<KeySchemaElement> ks = new ArrayList<KeySchemaElement>();
 			ks.add(new KeySchemaElement().withAttributeName("Id").withKeyType(KeyType.HASH));
@@ -104,11 +106,13 @@ public class DatabaseHelper
 		}
 	}
 	
+
 	public List<Tweet> getTweetsByTopic(String topic)
 	{
 		System.out.println("Getting all tweets by topic ...");
 		List<Tweet> scannedTweets = new ArrayList<Tweet>();
 		List<Tweet> tweets = new ArrayList<Tweet>();
+
 		try
 		{
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
@@ -139,12 +143,13 @@ public class DatabaseHelper
 		System.out.println("Getting all tweets ...");
 		List<Tweet> scannedTweets = new ArrayList<Tweet>();
 		List<Tweet> tweets = new ArrayList<Tweet>();
+
 		try
 		{			
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
 			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
 			
-			scannedTweets = mapper.scan(String.class, scanExpression);
+			scannedTweets = mapper.scan(Tweet.class, scanExpression);
 			System.out.println("Retrieved " + scannedTweets.size() + " record(s).");
 			
 			tweets.addAll(scannedTweets);
