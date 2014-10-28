@@ -1,4 +1,3 @@
-package app;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +22,6 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import com.amazonaws.services.dynamodbv2.model.TableStatus;
 
-import models.Tweet;
 
 public class DatabaseHelper
 {
@@ -42,9 +40,8 @@ public class DatabaseHelper
 		try {
 			ArrayList<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
 			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Id").withAttributeType("S"));
-			
-			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Location").withAttributeType("S"));
-			attributeDefinitions.add(new AttributeDefinition().withAttributeName("Keyword").withAttributeType("S"));
+			//attributeDefinitions.add(new AttributeDefinition().withAttributeName("Location").withAttributeType("S"));
+			//attributeDefinitions.add(new AttributeDefinition().withAttributeName("Keyword").withAttributeType("S"));
 
 			
 			ArrayList<KeySchemaElement> ks = new ArrayList<KeySchemaElement>();
@@ -119,14 +116,15 @@ public class DatabaseHelper
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
 			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
 
-			Map<String, Condition> scanFilter = new HashMap<String, Condition>();
-			Condition scanCondition = new Condition()
-			.withComparisonOperator(ComparisonOperator.EQ.toString())
-			.withAttributeValueList(new AttributeValue().withS(topic));
+			//Map<String, Condition> scanFilter = new HashMap<String, Condition>();
+			scanExpression.addFilterCondition("Topic", 
+					new Condition()
+					.withComparisonOperator(ComparisonOperator.EQ)
+					.withAttributeValueList(new AttributeValue().withS(topic)));
 
-			scanFilter.put("Topic", scanCondition);
+			//scanFilter.put("Topic", scanCondition);
 
-			scanExpression.setScanFilter(scanFilter);
+			//scanExpression.setScanFilter(scanFilter);
 
 			scannedTweets = mapper.scan(Tweet.class, scanExpression);
 			System.out.println("Retrieved " + scannedTweets.size() + " record(s).");
@@ -149,6 +147,13 @@ public class DatabaseHelper
 		{			
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
 			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+			
+			//a7a8b4e7-24c9-4528-a4fe-bf5bec34f00c
+			//Class<Tweet> tweet = mapper.load(Tweet.class);
+			if(scanExpression == null){
+				System.out.println("is null");
+			}
+			System.out.println(Tweet.class);
 			
 			scannedTweets = mapper.scan(Tweet.class, scanExpression);
 			System.out.println("Retrieved " + scannedTweets.size() + " record(s).");
