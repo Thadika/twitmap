@@ -112,7 +112,7 @@ public class TwitterApi {
 					tweets.add(new Tweet().withKeyword(this.keyword).withLocation(status.getGeoLocation().getLatitude()+","+status.getGeoLocation().getLongitude()).withCreated(status.getCreatedAt()));
 					count++;
 				}
-				if(count > 1000){
+				if(count > 300){
 					System.out.println(tweets.size());
 					synchronized (lock){
 						lock.notify();
