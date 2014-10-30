@@ -152,7 +152,7 @@ public class DatabaseHelper
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
 			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
 
-			scanExpression.addFilterCondition("Topic", 
+			scanExpression.addFilterCondition("Keyword", 
 					new Condition()
 					.withComparisonOperator(ComparisonOperator.EQ)
 					.withAttributeValueList(new AttributeValue().withS(topic)));
