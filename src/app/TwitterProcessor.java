@@ -1,9 +1,8 @@
 package app;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import twitter4j.Status;
+import models.Tweet;
 
 
 public class TwitterProcessor implements Runnable {

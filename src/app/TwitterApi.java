@@ -2,6 +2,7 @@ package app;
 import java.util.ArrayList;
 import java.util.List;
 
+import models.Tweet;
 import twitter4j.FilterQuery;
 import twitter4j.Query;
 import twitter4j.QueryResult;

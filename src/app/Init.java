@@ -1,12 +1,11 @@
 package app;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import twitter4j.Status;
+import models.Tweet;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProviderChain;

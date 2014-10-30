@@ -89,7 +89,7 @@
 	</div>
 	<div class="container fill">
 		<div class="starter-template">
-			<h1>TwitMap NYC</h1>
+			<h1>TwitMap Gloabl</h1>
 			<p class="lead">Find out what's trending and where</p>
 		</div>
 		<div id="main-content" class="fill">
