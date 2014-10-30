@@ -1,26 +1,62 @@
+package app;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import twitter4j.Status;
+
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 
-public class Init
+
+
+public class Init implements ServletContextListener
 {
 	AWSCredentials awsCredentials;
-	TwitterApi api;
-
-	public static void main(String[] args)
-	{
-		System.out.println("initializing app");
-		Init init = new Init();
-		
-		init.doCredentials();
-		//init.createDistribution();
-		//init.createDatabase();
-		//init.populateTable();
-		init.initializeTwitterApi();
+	private Thread thread = null;
+	private TwitterProcessor tweetUpdater = null;
+	
+	@Override
+	public void contextDestroyed(ServletContextEvent arg0) {
+		System.out.println("Cleaning up app");
+		if(thread != null){
+			tweetUpdater.terminate();
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		doCredentials();
+		deleteDatabase();
 	}
 	
-	public void doCredentials()
+	@Override
+	public void contextInitialized(ServletContextEvent arg)
+	{
+		System.out.println("initializing app");
+		doCredentials();
+		createDatabase();
+		populateTable();
+		
+		tweetUpdater = new TwitterProcessor(new DatabaseHelper()
+			.withCredentials(awsCredentials));
+		thread = new Thread(tweetUpdater);
+		thread.start();
+		
+	}
+	
+	private void deleteDatabase(){
+		DatabaseHelper helper = new DatabaseHelper().withCredentials(awsCredentials);
+		helper.removeTable();
+	}
+	
+	private void doCredentials()
 	{
 		this.awsCredentials = new AWSCredentialsProviderChain(
 	            new InstanceProfileCredentialsProvider(),
@@ -28,15 +64,7 @@ public class Init
 	}
 	
 	
-	public void createDistribution()
-	{
-		OnDemandDistributor distributor = new OnDemandDistributor()
-							.withAWSCredentials(awsCredentials);
-		distributor.createWebDistribution();
-		distributor.createRtmpDistribution();
-	}
-	
-	public void createDatabase()
+	private void createDatabase()
 	{
 		DatabaseHelper helper = new DatabaseHelper()
 							.withCredentials(awsCredentials);
@@ -44,20 +72,20 @@ public class Init
 		
 	}
 	
-	public void initializeTwitterApi(){
-		this.api = new TwitterApi();
-	}
-	
 	public void populateTable(){
-		DatabaseHelper helper = new DatabaseHelper().withCredentials(awsCredentials);
-		helper.saveTweet(new Tweet().withKeyword("Ebola").withLocation("-22.9083081,-43.1970258"));
-		helper.saveTweet(new Tweet().withKeyword("Obama").withLocation("40.7056308,-73.9780035"));
-		helper.saveTweet(new Tweet().withKeyword("Ebola").withLocation("48.8588589,2.3470599"));
-		helper.saveTweet(new Tweet().withKeyword("NFL").withLocation("51.5073509,-0.1277583"));
-		helper.saveTweet(new Tweet().withKeyword("NFL").withLocation("41.39479,2.1487679"));
-		helper.saveTweet(new Tweet().withKeyword("NFL").withLocation("3.139003,101.686855"));
+		DatabaseHelper dbHelper = new DatabaseHelper().withCredentials(awsCredentials);
+		String[] trends = {"#Ebola", "#Obama", "#NFL"};
+		TwitterApi api = new TwitterApi();
+		for(String keyword : trends){
+			List<Status> tweets = api.getTweetsByTrendStreaming(keyword);
+			//System.out.println("Got tweets for trend" + s + " (" + tweets.size() +")");
+			List<Tweet> tweetModels = new ArrayList<Tweet>();
+	
+			for(Status stts : tweets){
+				tweetModels.add(new Tweet().withKeyword(keyword).withLocation(stts.getGeoLocation().getLatitude()+","+stts.getGeoLocation().getLongitude()).withCreated(stts.getCreatedAt()));
+			}
+			dbHelper.batchSaveTweets(tweetModels);
+		}
 	}
-	
-	
 
 }

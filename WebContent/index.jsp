@@ -40,6 +40,9 @@
 	google.maps.event.addDomListener(window, 'load', initialize);
 	
 	function clickGo() {
+		if($("#keyword").val() == 0){
+			return false;
+		}
 			var lat;
 			var lng;
 			$.getJSON("Twitmap", {keyword:$('#keyword').val()}, function(data) {
@@ -92,10 +95,10 @@
 		<div id="main-content" class="fill">
 			<form name="keyForm" action='Twitmap' method='get' target="googleMap">
 				<select class="selectpicker" name="keyword" id="keyword">
-					<option>Select a topic</option>
-					<option>Obama</option>
-					<option>Ebola</option>
-					<option>NFL</option>
+					<option value="0">Select a topic</option>
+					<option>#Obama</option>
+					<option>#Ebola</option>
+					<option>#NFL</option>
 				</select>
 				<button type="submit" class="btn" id="go" onclick="return clickGo();"></button>
 			</form>

@@ -1,12 +1,12 @@
+package app;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.services.cloudsearchv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
@@ -15,6 +15,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.DeleteTableRequest;
 import com.amazonaws.services.dynamodbv2.model.DescribeTableRequest;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
@@ -26,12 +27,37 @@ import com.amazonaws.services.dynamodbv2.model.TableStatus;
 public class DatabaseHelper
 {
 	private AmazonDynamoDBClient amazonDynamoDBClient = null;
-	public static final String tableName = "bucketoftweets";
+	public static final String tableName = "Tweets";
 	
 	public DatabaseHelper withCredentials(AWSCredentials awsCredentials)
 	{
 		this.amazonDynamoDBClient = new AmazonDynamoDBClient(awsCredentials);
 		return this;
+	}
+	
+	public void removeTable(){
+		DeleteTableRequest dtr = new DeleteTableRequest().withTableName(DatabaseHelper.tableName);
+		this.amazonDynamoDBClient.deleteTable(dtr);
+		
+		System.out.println("Waiting for " + tableName + " while status DELETING...");
+
+		long startTime = System.currentTimeMillis();
+		long endTime = startTime + (10 * 60 * 1000);
+		while (System.currentTimeMillis() < endTime) {
+			try {
+				DescribeTableRequest request = new DescribeTableRequest().withTableName(tableName);
+				TableDescription tableDescription = this.amazonDynamoDBClient.describeTable(request).getTable();
+				String tableStatus = tableDescription.getTableStatus();
+				System.out.println("  - current state: " + tableStatus);
+				if (tableStatus.equals(TableStatus.ACTIVE.toString())) return;
+			} catch (ResourceNotFoundException e) {
+				System.out.println("Table " + tableName + " is not found. It was deleted.");
+				return;
+			}
+			try {Thread.sleep(1000 * 20);} catch (Exception e) {}
+		}
+		throw new RuntimeException("Table " + tableName + " was never deleted");
+	    
 	}
 	
 	public void initialize()
@@ -91,12 +117,12 @@ public class DatabaseHelper
 	
 	public void saveTweet(Tweet tweet)
 	{
-		System.out.println("Saving tweet ...");
+		//System.out.println("Saving tweet ...");
 		try
 		{			
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
 			mapper.save(tweet);			
-			System.out.println("Saved.");
+			//System.out.println("Saved.");
 		}
 		catch (Exception e)
 		{
@@ -104,10 +130,20 @@ public class DatabaseHelper
 		}
 	}
 	
+	public void batchSaveTweets(List<Tweet> tweets){
+		try{
+			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
+			mapper.batchSave(tweets);
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+	
 
 	public List<Tweet> getTweetsByTopic(String topic)
 	{
-		System.out.println("Getting all tweets by topic ...");
+		System.out.println("Getting all tweets by topic " + topic + "...");
 		List<Tweet> scannedTweets = new ArrayList<Tweet>();
 		List<Tweet> tweets = new ArrayList<Tweet>();
 
@@ -116,15 +152,10 @@ public class DatabaseHelper
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
 			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
 
-			//Map<String, Condition> scanFilter = new HashMap<String, Condition>();
 			scanExpression.addFilterCondition("Topic", 
 					new Condition()
 					.withComparisonOperator(ComparisonOperator.EQ)
 					.withAttributeValueList(new AttributeValue().withS(topic)));
-
-			//scanFilter.put("Topic", scanCondition);
-
-			//scanExpression.setScanFilter(scanFilter);
 
 			scannedTweets = mapper.scan(Tweet.class, scanExpression);
 			System.out.println("Retrieved " + scannedTweets.size() + " record(s).");
@@ -147,14 +178,7 @@ public class DatabaseHelper
 		{			
 			DynamoDBMapper mapper = new DynamoDBMapper(this.amazonDynamoDBClient);
 			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
-			
-			//a7a8b4e7-24c9-4528-a4fe-bf5bec34f00c
-			//Class<Tweet> tweet = mapper.load(Tweet.class);
-			if(scanExpression == null){
-				System.out.println("is null");
-			}
-			System.out.println(Tweet.class);
-			
+						
 			scannedTweets = mapper.scan(Tweet.class, scanExpression);
 			System.out.println("Retrieved " + scannedTweets.size() + " record(s).");
 			

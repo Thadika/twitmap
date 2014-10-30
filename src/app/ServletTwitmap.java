@@ -1,3 +1,4 @@
+package app;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -15,21 +16,9 @@ import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 
 public class ServletTwitmap extends HttpServlet{
-	private TwitterApi api;
-	
-	public void init(){
-		api = new TwitterApi();
-	}
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		Init.main(null);
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	    response.setContentType("application/json");
 	    PrintWriter out = response.getWriter();
 	    try {
@@ -39,7 +28,7 @@ public class ServletTwitmap extends HttpServlet{
 	    DatabaseHelper dbHelper = new DatabaseHelper().withCredentials(new AWSCredentialsProviderChain(
 	            new InstanceProfileCredentialsProvider(),
 	            new ClasspathPropertiesFileCredentialsProvider()).getCredentials());
-	    List<String> locations = dbHelper.getTweetLocations(dbHelper.getAllTweets());
+	    List<String> locations = dbHelper.getTweetLocations(dbHelper.getTweetsByTopic(key));
 	    JSONArray array = new JSONArray(locations);
 	    //Populate with latitude and longitude of tweets
 	    JSONObject result = new JSONObject();
