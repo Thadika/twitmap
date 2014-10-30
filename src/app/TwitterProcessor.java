@@ -1,3 +1,5 @@
+package app;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,17 +27,8 @@ public class TwitterProcessor implements Runnable {
 				//Sleep for 5 minutes before updating with most recent tweets again
 				Thread.sleep(60*5*1000);
 				//update dynamoDb
-				for(String keyword : trends){
-					List<Status> tweets = api.getTweetsByTrendStreaming(keyword);
-					//System.out.println("Got tweets for trend" + s + " (" + tweets.size() +")");
-					List<Tweet> tweetModels = new ArrayList<Tweet>();
-					
-					for(Status stts : tweets){
-						
-						tweetModels.add(new Tweet().withKeyword(keyword).withLocation(stts.getGeoLocation().getLatitude()+","+stts.getGeoLocation().getLongitude()).withCreated(stts.getCreatedAt()));
-					}
-					dbHelper.batchSaveTweets(tweetModels);
-				}
+				List<Tweet> tweets = api.getTweetsByTrendStreaming(trends);
+				dbHelper.batchSaveTweets(tweets);
 				
 			}catch(InterruptedException e){
 				running = false;

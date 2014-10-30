@@ -80,10 +80,13 @@ public class TwitterApi {
 		return result;
 	}
 	
-	public List<Status> getTweetsByTrendStreaming(String trend){
-		final List<Status> statuses = new ArrayList<Status>();
-		System.out.println("size of statuses: " + statuses.size());
-		StatusListener listener = new StatusListener(){
+	public List<Tweet> getTweetsByTrendStreaming(String[] trends){
+		final List<Tweet> tweets = new ArrayList<Tweet>();
+		System.out.println("size of statuses: " + tweets.size());
+		MyStatusListener listener = new MyStatusListener(){
+			private int count = 0;
+			private String keyword;
+			
 			@Override
 			public void onException(Exception e) {
 				e.printStackTrace();
@@ -105,13 +108,15 @@ public class TwitterApi {
 			public void onStatus(Status status) {
 				//System.out.println(status.getGeoLocation().getLatitude() + "," + status.getGeoLocation().getLongitude());
 				if(status.getGeoLocation() != null){
-					statuses.add(status);
+					tweets.add(new Tweet().withKeyword(this.keyword).withLocation(status.getGeoLocation().getLatitude()+","+status.getGeoLocation().getLongitude()).withCreated(status.getCreatedAt()));
+					count++;
 				}
-				if(statuses.size() > 1000){
-					System.out.println(statuses.size());
+				if(count > 1000){
+					System.out.println(tweets.size());
 					synchronized (lock){
 						lock.notify();
 					}
+					count = 0;
 					System.out.println("unlocked");
 				}
 			}
@@ -119,34 +124,46 @@ public class TwitterApi {
 			@Override
 			public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
 			}
+			
+			@Override
+			public void setKeyword(String key){
+				this.keyword = key;
+			}
 		};
+		
 		twitterStream.addListener(listener);
 
-		//add location filter for what I hope is the whole planet. Just trying to limit
-		//results to only things that are geotagged
 		FilterQuery filter = new FilterQuery();
 		double[][] locations = {{-180.0d,-90.0d},{180.0d,90.0d}};
-		String[] keywords = {trend};
-		
 		filter.locations(locations);
-		filter.track(keywords);
-
-		twitterStream.filter(filter);
-		try {
-			System.out.println("waiting for lock");
-			synchronized (lock) {
-				lock.wait();
+		
+		for(String trend: trends){
+			listener.setKeyword(trend);
+			
+			String[] keywords = {trend};
+			filter.track(keywords);
+	
+			twitterStream.filter(filter);
+			try {
+				System.out.println("waiting for lock");
+				synchronized (lock) {
+					lock.wait();
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		twitterStream.removeListener(listener);
 		twitterStream.shutdown();
 		
 		//System.out.println("Got Statuses (" + statuses.size() +")");
-		return statuses;
+		return tweets;
 	}
 	
+	public interface MyStatusListener extends StatusListener{
+		public void setKeyword(String key);
+		
+	}
 	
 }

@@ -13,8 +13,6 @@ import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 
-
-
 public class Init implements ServletContextListener
 {
 	AWSCredentials awsCredentials;
@@ -76,16 +74,8 @@ public class Init implements ServletContextListener
 		DatabaseHelper dbHelper = new DatabaseHelper().withCredentials(awsCredentials);
 		String[] trends = {"#Ebola", "#Obama", "#NFL"};
 		TwitterApi api = new TwitterApi();
-		for(String keyword : trends){
-			List<Status> tweets = api.getTweetsByTrendStreaming(keyword);
-			//System.out.println("Got tweets for trend" + s + " (" + tweets.size() +")");
-			List<Tweet> tweetModels = new ArrayList<Tweet>();
-	
-			for(Status stts : tweets){
-				tweetModels.add(new Tweet().withKeyword(keyword).withLocation(stts.getGeoLocation().getLatitude()+","+stts.getGeoLocation().getLongitude()).withCreated(stts.getCreatedAt()));
-			}
-			dbHelper.batchSaveTweets(tweetModels);
-		}
+		List<Tweet> tweets = api.getTweetsByTrendStreaming(trends);
+		dbHelper.batchSaveTweets(tweets);
 	}
 
 }
