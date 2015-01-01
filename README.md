@@ -1,4 +1,4 @@
-**Twitmap**
+***Twitmap***
 
 To see what's being tweeted and where, go to the home page (index.jsp) and select a hashtag from the dropdown menu; click the Twitmap icon on the right and see the 300 most recent tweets containing your selected hashtag plotted on a map of the world!
 
